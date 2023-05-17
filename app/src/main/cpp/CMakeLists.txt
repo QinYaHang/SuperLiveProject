@@ -34,8 +34,6 @@ set_target_properties(avutil PROPERTIES IMPORTED_LOCATION ${ffmpeg_path}/libavut
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-include_directories(include/commandline)
-
 add_library( # Sets the name of the library.
         life
 
