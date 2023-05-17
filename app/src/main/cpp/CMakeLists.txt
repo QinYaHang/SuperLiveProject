@@ -9,7 +9,7 @@ project(lifeProject)
 # Declares and names the project.
 
 #添加头文件路径（相对于本文件路径）
-include_directories(${PROJECT_DIR}/src/main/cpp/include)
+include_directories(include)
 #设置ffmpeg库所在路径的变量
 set(ffmpeg_path ${PROJECT_DIR}/libs/${ANDROID_ABI})
 
@@ -34,7 +34,7 @@ set_target_properties(avutil PROPERTIES IMPORTED_LOCATION ${ffmpeg_path}/libavut
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-include_directories(${PROJECT_DIR}/src/main/cpp/include/commandline)
+include_directories(include/commandline)
 
 add_library( # Sets the name of the library.
         life
@@ -43,12 +43,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp
-        include/commandline/ffmpeg.c
-        include/commandline/cmdutils.c
-        include/commandline/ffmpeg_opt.c
-        include/commandline/ffmpeg_filter.c
-        include/commandline/ffmpeg_hw.c)
+        native-lib.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
