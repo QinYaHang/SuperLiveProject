@@ -19,7 +19,6 @@ android {
             cmake {
                 cppFlags '-std=c++11'
                 arguments "-DPROJECT_DIR=${getProjectDir().getAbsolutePath()}"
-                arguments "-DANDROID_ARM_NEON=TRUE"
                 abiFilters 'arm64-v8a'
             }
         }
