@@ -1,8 +1,9 @@
 package com.aspirin.liveproject
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.aspirin.liveproject.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -14,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val findViewById = binding.root.findViewById<TextView>(R.id.sample_text)
-        findViewById.text = stringFromJNI();
+        findViewById.text = "stringFromJNI()";
     }
 
     /**
@@ -28,5 +29,9 @@ class MainActivity : AppCompatActivity() {
         init {
             System.loadLibrary("life")
         }
+    }
+
+    fun onTest(view: View) {
+        stringFromJNI();
     }
 }
