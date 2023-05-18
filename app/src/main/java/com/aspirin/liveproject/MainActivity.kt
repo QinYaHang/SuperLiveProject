@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
      */
     external fun stringFromJNI(): String
 
+    external fun pcmToMp3()
+
     companion object {
         // Used to load the 'liveproject' library on application startup.
         init {
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onTest(view: View) {
-        stringFromJNI();
+        stringFromJNI()
+        pcmToMp3()
     }
 }
