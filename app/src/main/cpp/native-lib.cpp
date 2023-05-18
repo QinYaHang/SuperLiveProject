@@ -165,7 +165,7 @@ Java_com_aspirin_liveproject_MainActivity_pcmToMp3(JNIEnv *env, jobject thiz) {
     AVPacket *pkt = av_packet_alloc();
 
     const char *inFileName = "/sdcard/Android/16000_1_s16le_012.pcm";
-    const char *outFileName = "/sdcard/Android/16000_1_s16le_012.mp3";
+    const char *outFileName = "/sdcard/Android/16000_1_s16le_012.mp2";
 
     int ret = 0;
 
@@ -193,15 +193,14 @@ Java_com_aspirin_liveproject_MainActivity_pcmToMp3(JNIEnv *env, jobject thiz) {
         // 设置参数
         AVCodecParameters *codecPara = fmtCtx->streams[outStream->index]->codecpar;
         codecPara->codec_type = AVMEDIA_TYPE_AUDIO;
-        codecPara->codec_id = AV_CODEC_ID_AAC;
+        codecPara->codec_id = fmtCtx->oformat->audio_codec;
         codecPara->bit_rate = 128000;
         codecPara->channels = 1;
         codecPara->channel_layout = av_get_default_channel_layout(codecPara->channels);
         codecPara->sample_rate = 16000;
         codecPara->format = AV_SAMPLE_FMT_S16;
         // 查找编码器
-        codec = avcodec_find_encoder(AV_CODEC_ID_MP3);
-        codec = avcodec_find_encoder(AV_CODEC_ID_AAC);
+        codec = avcodec_find_encoder(codecPara->codec_id);
         if (codec == NULL) {
             LOGE("Cannot find audio encoder.\n");
             return;
@@ -213,7 +212,7 @@ Java_com_aspirin_liveproject_MainActivity_pcmToMp3(JNIEnv *env, jobject thiz) {
             return;
         }
         // 打开编码器
-        if (avcodec_open2(codecCtx, codec, NULL) < 0) {
+        if (avcodec_open2(codecCtx, NULL, NULL) < 0) {
             LOGE("Cannot open encoder.\n");
             return;
         }
@@ -275,7 +274,6 @@ Java_com_aspirin_liveproject_MainActivity_pcmToMp3(JNIEnv *env, jobject thiz) {
             length = frame->nb_samples * av_get_bytes_per_sample(codecCtx->sample_fmt);
             // 双通道赋值（输出的AAC为双通道）
             memcpy(frame->data[0], convert_data[0], length);
-            memcpy(frame->data[1], convert_data[1], length);
             frame->pts = i * 100;
             if (avcodec_send_frame(codecCtx, frame) < 0) {
                 while (avcodec_receive_packet(codecCtx, pkt) >= 0) {

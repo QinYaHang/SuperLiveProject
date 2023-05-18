@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onTest(view: View) {
-        stringFromJNI()
         pcmToMp3()
     }
 }
