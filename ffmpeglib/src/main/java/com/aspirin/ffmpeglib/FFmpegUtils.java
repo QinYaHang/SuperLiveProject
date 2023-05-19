@@ -1,13 +1,10 @@
-package com.aspirin.liveproject;
+package com.aspirin.ffmpeglib;
 
-/**
- * @Author 三元之
- * @Date 2023-05-19-9:31
- */
 public class FFmpegUtils {
 
+    // Used to load the 'ffmpeglib' library on application startup.
     static {
-        System.loadLibrary("life");
+        System.loadLibrary("ffmpeglib");
     }
 
     /**
