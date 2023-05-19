@@ -71,6 +71,11 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
     AVFrame *pcmFrame = NULL;
     char *pcmData = NULL;
 
+    // 输出音频相关格式配置
+    const int outChannels = 1;
+    const int outSampleRate = 16000;
+    const AVSampleFormat outSampleFmt = AV_SAMPLE_FMT_S16;
+
     // 流程处理
     int re = JNI_OK;
     do {
@@ -108,18 +113,25 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
             LOGE("avcodec_open2 audio failed! : %s", av_err2str(re));
             break;
         }
-        // 音频重采样上下文初始化
-        swrContext = swr_alloc();
-        swrContext = swr_alloc_set_opts(swrContext,
-                                        av_get_default_channel_layout(1), AV_SAMPLE_FMT_S16, 16000,
-                                        audioCodecContext->channel_layout,
-                                        audioCodecContext->sample_fmt,
-                                        audioCodecContext->sample_rate,
-                                        0, 0);
-        re = swr_init(swrContext);
-        if (re != 0) {
-            LOGE("swr_init failed! : %s", av_err2str(re));
-            break;
+        // 判断是否需要重采样
+        bool isNeedAudioSwr = outChannels != audioCodecContext->channels ||
+                              outSampleRate != audioCodecContext->sample_rate ||
+                              outSampleFmt != audioCodecContext->sample_fmt;
+        if (isNeedAudioSwr) {
+            // 音频重采样上下文初始化
+            swrContext = swr_alloc();
+            swrContext = swr_alloc_set_opts(swrContext,
+                                            av_get_default_channel_layout(outChannels),
+                                            outSampleFmt, outSampleRate,
+                                            audioCodecContext->channel_layout,
+                                            audioCodecContext->sample_fmt,
+                                            audioCodecContext->sample_rate,
+                                            0, 0);
+            re = swr_init(swrContext);
+            if (re != 0) {
+                LOGE("swr_init failed! : %s", av_err2str(re));
+                break;
+            }
         }
         // 以只写模式打开文件
         pcmOutFile.open(file_dest_path, std::ios::out);
@@ -146,18 +158,25 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
                     if (re != 0) {
                         break;
                     }
-                    uint8_t *out[2] = {0};
-                    out[0] = (uint8_t *) pcmData;
-                    // 音频重采样
-                    int len = swr_convert(swrContext,
-                                          out, 16000,
-                                          (const uint8_t **) pcmFrame->data, pcmFrame->nb_samples);
-                    if (len < 0) {
-                        LOGE("swr_convert failed! :%s ", av_err2str(len));
-                        continue;
+                    // 判断是否需要重采样
+                    if (isNeedAudioSwr) {
+                        uint8_t *out[2] = {0};
+                        out[0] = (uint8_t *) pcmData;
+                        // 音频重采样
+                        int len = swr_convert(swrContext,
+                                              out, outSampleRate,
+                                              (const uint8_t **) pcmFrame->data,
+                                              pcmFrame->nb_samples);
+                        if (len < 0) {
+                            LOGE("swr_convert failed! :%s ", av_err2str(len));
+                            continue;
+                        }
+                        // 写入文件
+                        pcmOutFile.write(pcmData, len * 2);
+                    } else {
+                        // 写入文件
+                        pcmOutFile.write((char *) pcmFrame->data[0], pcmFrame->nb_samples * 2);
                     }
-                    // 写入文件
-                    pcmOutFile.write(pcmData, len * 2);
                     // 清理
                     av_frame_unref(pcmFrame);
                 }
