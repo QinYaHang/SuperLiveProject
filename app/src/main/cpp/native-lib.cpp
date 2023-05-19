@@ -114,10 +114,9 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
             break;
         }
         // 判断是否需要重采样
-        bool isNeedAudioSwr =
-                av_get_default_channel_layout(outChannels) != audioCodecContext->channel_layout ||
-                outSampleRate != audioCodecContext->sample_rate ||
-                outSampleFmt != audioCodecContext->sample_fmt;
+        bool isNeedAudioSwr = outChannels != audioCodecContext->channels ||
+                              outSampleRate != audioCodecContext->sample_rate ||
+                              outSampleFmt != audioCodecContext->sample_fmt;
         if (isNeedAudioSwr) {
             // 音频重采样上下文初始化
             swrContext = swr_alloc();
@@ -131,12 +130,7 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
             re = swr_init(swrContext);
             if (re != 0) {
                 LOGE("swr_init failed! : %s", av_err2str(re));
-                //  再次验证
-                isNeedAudioSwr = outSampleRate != audioCodecContext->sample_rate ||
-                                 outSampleFmt != audioCodecContext->sample_fmt;
-                if (isNeedAudioSwr) {
-                    break;
-                }
+                break;
             }
         }
         // 以只写模式打开文件
