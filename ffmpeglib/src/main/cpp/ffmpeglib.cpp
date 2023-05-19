@@ -111,7 +111,7 @@ Java_com_aspirin_ffmpeglib_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, js
             swrContext = swr_alloc_set_opts(swrContext,
                                             av_get_default_channel_layout(outChannels),
                                             outSampleFmt, outSampleRate,
-                                            audioCodecContext->channel_layout,
+                                            av_get_default_channel_layout(audioCodecContext->channels),
                                             audioCodecContext->sample_fmt,
                                             audioCodecContext->sample_rate,
                                             0, 0);
