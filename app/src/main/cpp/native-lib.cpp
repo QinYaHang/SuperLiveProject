@@ -50,7 +50,7 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
     // 获取源文件路径
     const char *file_src_path = env->GetStringUTFChars(src_path, NULL);
     const char *file_dest_path = env->GetStringUTFChars(dest_path, NULL);
-    LOGE("file_src_path is %s , file_dest_path is %s  ", file_src_path, file_dest_path);
+    LOGD("file_src_path is %s , file_dest_path is %s  ", file_src_path, file_dest_path);
 
     // 初始化解封装和编码器
     av_register_all();
@@ -77,13 +77,13 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
         // 打开文件
         re = avformat_open_input(&pcmFormatContext, file_src_path, 0, 0);
         if (re != 0) {
-            LOGE("avformat_open_input failed!:%s", av_err2str(re));
+            LOGE("avformat_open_input failed! :%s", av_err2str(re));
             break;
         }
         // 获取音频流信息
         re = avformat_find_stream_info(pcmFormatContext, 0);
         if (re < 0) {
-            LOGE("avformat_find_stream_info failed!%s", av_err2str(re));
+            LOGE("avformat_find_stream_info failed! :%s", av_err2str(re));
             break;
         }
         // 获取音频流音频索引
@@ -105,7 +105,7 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
         // 打开解码器
         re = avcodec_open2(audioCodecContext, audioCodec, 0);
         if (re != 0) {
-            LOGE("avcodec_open2 audio failed!");
+            LOGE("avcodec_open2 audio failed! :%s", av_err2str(re));
             break;
         }
         // 音频重采样上下文初始化
@@ -118,7 +118,7 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
                                         0, 0);
         re = swr_init(swrContext);
         if (re != 0) {
-            LOGE("swr_init failed!");
+            LOGE("swr_init failed! :%s", av_err2str(re));
             break;
         }
         // 以只写模式打开文件
@@ -138,7 +138,7 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
                 // 发送到线程中解码
                 re = avcodec_send_packet(audioCodecContext, pcmPkt);
                 if (re != 0) {
-                    LOGE("avcodec_send_packet failed!");
+                    LOGE("avcodec_send_packet failed! :%s", av_err2str(re));
                     continue;
                 }
                 for (;;) {
@@ -152,8 +152,12 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
                     int len = swr_convert(swrContext,
                                           out, 16000,
                                           (const uint8_t **) pcmFrame->data, pcmFrame->nb_samples);
+                    if (len < 0) {
+                        LOGE("swr_convert failed! :%s", av_err2str(len));
+                        continue;
+                    }
                     // 写入文件
-                    pcmOutFile.write(pcmData, len * 2);
+                    pcmOutFile.write(pcmData, pcmFrame->pkt_size);
                     // 清理
                     av_frame_unref(pcmFrame);
                 }
