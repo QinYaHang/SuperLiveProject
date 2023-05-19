@@ -24,8 +24,6 @@ class MainActivity : AppCompatActivity() {
      */
     external fun stringFromJNI(): String
 
-    external fun pcmToMp3()
-
     companion object {
         // Used to load the 'liveproject' library on application startup.
         init {
@@ -34,6 +32,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onTest(view: View) {
-        pcmToMp3()
+        FFmpegUtils.decodeTOPcm("/sdcard/Android/dfda1d8f-d436-4c21-ae3f-1462ddf7547d.mp4","/sdcard/Android/16000_1_s16le_012.pcm");
     }
 }
