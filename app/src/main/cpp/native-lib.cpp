@@ -114,9 +114,10 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
             break;
         }
         // 判断是否需要重采样
-        bool isNeedAudioSwr = outChannels != audioCodecContext->channels ||
-                              outSampleRate != audioCodecContext->sample_rate ||
-                              outSampleFmt != audioCodecContext->sample_fmt;
+        bool isNeedAudioSwr =
+                av_get_default_channel_layout(outChannels) != audioCodecContext->channel_layout ||
+                outSampleRate != audioCodecContext->sample_rate ||
+                outSampleFmt != audioCodecContext->sample_fmt;
         if (isNeedAudioSwr) {
             // 音频重采样上下文初始化
             swrContext = swr_alloc();
@@ -130,7 +131,12 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
             re = swr_init(swrContext);
             if (re != 0) {
                 LOGE("swr_init failed! : %s", av_err2str(re));
-                break;
+                //  再次验证
+                isNeedAudioSwr = outSampleRate != audioCodecContext->sample_rate ||
+                                 outSampleFmt != audioCodecContext->sample_fmt;
+                if (isNeedAudioSwr) {
+                    break;
+                }
             }
         }
         // 以只写模式打开文件
@@ -172,10 +178,12 @@ Java_com_aspirin_liveproject_FFmpegUtils_decodeTOPcm(JNIEnv *env, jclass clazz, 
                             continue;
                         }
                         // 写入文件
-                        pcmOutFile.write(pcmData, len * 2);
+                        pcmOutFile.write(pcmData, len * av_get_bytes_per_sample(outSampleFmt));
                     } else {
+                        // 输出一帧数据的长度
+                        int length = pcmFrame->nb_samples * av_get_bytes_per_sample(outSampleFmt);
                         // 写入文件
-                        pcmOutFile.write((char *) pcmFrame->data[0], pcmFrame->nb_samples * 2);
+                        pcmOutFile.write((char *) pcmFrame->data[0], length);
                     }
                     // 清理
                     av_frame_unref(pcmFrame);
