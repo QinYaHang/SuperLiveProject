@@ -7,6 +7,8 @@ public class FFmpegUtils {
         System.loadLibrary("ffmpeglib");
     }
 
+    public static native int mp4ToMov(String srcPath, String destPath);
+
     /**
      * 解码成 pcm-->16000_1_s16le 格式
      *

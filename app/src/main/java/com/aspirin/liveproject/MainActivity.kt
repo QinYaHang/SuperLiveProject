@@ -33,6 +33,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onTest(view: View) {
-        FFmpegUtils.decodeTOPcm("/sdcard/Android/output.wav","/sdcard/Android/16000_1_s16le_012.pcm");
+        FFmpegUtils.mp4ToMov("/sdcard/Android/570076217-1-16.mp4","/sdcard/Android/test.mov");
     }
 }
