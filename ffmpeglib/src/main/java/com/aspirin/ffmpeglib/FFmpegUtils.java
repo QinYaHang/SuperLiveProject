@@ -7,6 +7,9 @@ public class FFmpegUtils {
         System.loadLibrary("ffmpeglib");
     }
 
+    public static native int pcmToAAc(String srcPath, String destPath);
+    public static native int rgbToMp4(String srcPath, String destPath);
+
     public static native int mp4ToMov(String srcPath, String destPath);
 
     /**

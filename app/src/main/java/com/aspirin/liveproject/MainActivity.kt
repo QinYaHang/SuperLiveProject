@@ -1,9 +1,18 @@
 package com.aspirin.liveproject
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.aspirin.ffmpeglib.FFmpegUtils
 import com.aspirin.liveproject.databinding.ActivityMainBinding
 
@@ -17,6 +26,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         val findViewById = binding.root.findViewById<TextView>(R.id.sample_text)
         findViewById.text = "stringFromJNI()";
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri
+                )
+            )
+        }
     }
 
     /**
@@ -33,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onTest(view: View) {
-        FFmpegUtils.mp4ToMov("/sdcard/Android/570076217-1-16.mp4","/sdcard/Android/test.mov");
+        var path = Environment.getExternalStorageDirectory().absoluteFile
+        FFmpegUtils.rgbToMp4("/sdcard/Android/out.rgb", "/sdcard/Android/out.mp4");
     }
 }
