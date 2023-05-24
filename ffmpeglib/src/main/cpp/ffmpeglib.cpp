@@ -34,6 +34,20 @@ long long GetNowMs() {
 
 extern "C"
 JNIEXPORT jint JNICALL
+Java_com_aspirin_ffmpeglib_FFmpegUtils_rgbPcmToMp4(JNIEnv *env, jclass clazz, jstring src_path,
+                                                   jstring dest_path) {
+    // 获取源文件路径
+    const char *file_src_path = env->GetStringUTFChars(src_path, NULL);
+    const char *file_dest_path = env->GetStringUTFChars(dest_path, NULL);
+    LOGD("file_src_path is %s , file_dest_path is %s  ", file_src_path, file_dest_path);
+
+    // 初始化解封装和编码器
+    av_register_all();
+    avcodec_register_all();
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
 Java_com_aspirin_ffmpeglib_FFmpegUtils_pcmToAAc(JNIEnv *env, jclass clazz, jstring src_path,
                                                 jstring dest_path) {
     // 获取源文件路径
@@ -160,8 +174,6 @@ Java_com_aspirin_ffmpeglib_FFmpegUtils_pcmToAAc(JNIEnv *env, jclass clazz, jstri
     return JNI_OK;
 }
 
-
-
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_aspirin_ffmpeglib_FFmpegUtils_rgbToMp4(JNIEnv *env, jclass clazz, jstring src_path,
@@ -183,9 +195,9 @@ Java_com_aspirin_ffmpeglib_FFmpegUtils_rgbToMp4(JNIEnv *env, jclass clazz, jstri
     }
 
     //  输出格式
-    int width = 720;
-    int height = 960;
-    int fps = 24;
+    int width = 848;
+    int height = 480;
+    int fps = 25;
 
     // 1 create codec
     AVCodec *codec = avcodec_find_encoder(AV_CODEC_ID_H264);
@@ -201,8 +213,17 @@ Java_com_aspirin_ffmpeglib_FFmpegUtils_rgbToMp4(JNIEnv *env, jclass clazz, jstri
 
     c->width = width;
     c->height = height;
-    c->time_base = {1, 1000};
+    c->time_base = {1, fps};
     c->framerate = {fps, 1};
+
+    c->gop_size = 50;
+    c->max_b_frames = 0;
+
+    c->pix_fmt = AV_PIX_FMT_YUYV422;
+    c->codec_id = AV_CODEC_ID_H264;
+    c->thread_count = 8;
+
+    c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     // 打开解码器
     int ret = avcodec_open2(c, codec, NULL);

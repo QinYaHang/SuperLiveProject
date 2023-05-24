@@ -52,6 +52,6 @@ class MainActivity : AppCompatActivity() {
 
     fun onTest(view: View) {
         var path = Environment.getExternalStorageDirectory().absoluteFile
-        FFmpegUtils.rgbToMp4("/sdcard/Android/out.rgb", "/sdcard/Android/out.mp4");
+        FFmpegUtils.rgbPcmToMp4("/sdcard/Android/out2.rgb", "/sdcard/Android/out456123.mp4");
     }
 }
